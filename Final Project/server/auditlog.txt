@@ -1,0 +1,42 @@
+
+2021/03/03 13:41:41 Kim unsuccessfully wrote to medical record of patient 19950624-5386
+2021/03/03 13:48:25 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 13:51:59 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 13:53:30 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 13:55:29 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 13:56:28 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 13:56:45 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 13:57:14 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 14:00:11 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 14:06:45 doktor1 successfully read medical record of patient 19950624-5386
+2021/03/03 15:30:19 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 15:31:09 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 15:31:14 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 15:31:25 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 15:31:46 GOVERNMENTAGENCY successfully deleted medical record for patient 19850115-5679
+2021/03/03 15:36:38 doktor1 unsuccessfully wrote to medical record of patient 20181105-8654
+2021/03/03 15:49:46 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 15:49:49 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 15:50:02 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 15:50:21 GOVERNMENTAGENCY successfully deleted medical record for patient 19850115-5679
+2021/03/03 16:05:56 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 16:05:59 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/03 16:06:13 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 16:06:38 GOVERNMENTAGENCY successfully deleted medical record for patient 19850115-5679
+2021/03/03 16:06:49 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 16:07:23 Kim unsuccessfully read medical record of patient 19850115-5679
+2021/03/03 17:22:32 doktor1 successfully wrote to medical record of patient 19850115-5679
+2021/03/03 17:22:43 Kalle successfully read medical record of patient 19850115-5679
+2021/03/03 17:23:07 Kalle unsuccessfully read medical record of patient 20181105-8654
+2021/03/04 14:11:55 doktor1 successfully read medical record of patient 19850115-5679
+2021/03/04 21:05:57 Kalle successfully read medical record of patient 19850115-5679
+2021/03/04 21:07:10 doktor1 unsuccessfully read medical record of patient 20181105-8654
+2021/03/04 21:14:34 doktor1 successfully created new medical record for patient 19950624-5386
+2021/03/04 21:14:53 doktor1 successfully wrote to medical record of patient 19950624-5386
+2021/03/04 21:14:56 doktor1 successfully read medical record of patient 19950624-5386
+2021/03/04 21:15:49 GOVERNMENTAGENCY successfully deleted medical record for patient 19950624-5386
+2021/03/05 13:13:12 doktor1 successfully created new medical record for patient 19950624-5386
+2021/03/05 13:13:35 doktor1 successfully wrote to medical record of patient 19950624-5386
+2021/03/05 13:13:41 doktor1 successfully read medical record of patient 19950624-5386
+2021/03/05 13:14:17 GOVERNMENTAGENCY successfully deleted medical record for patient 19950624-5386
+2021/03/05 13:14:36 GOVERNMENTAGENCY unsuccessfully created new medical record for patient 19950624-5386

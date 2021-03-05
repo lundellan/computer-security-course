@@ -1,0 +1,51 @@
+3 patienter, 3 divisions, 2 läkare, 2 nurses, 1 GOV
+
+name:id-workid UO={divison}
+
+Patient1:
+CN=Kalle:19850115-5679 UO = Orthropedics
+
+Patient2:
+CN=Ella:20181105-8654 UO = Pediatrics
+
+Patient3:
+CN=Kim:19950624-5386 UO = Orthropedics
+
+doktor1:
+CN=doktor1:10734-01 UO = Orthropedics 
+
+doktor2:
+CN=doktor2:43616-01 UO = Pediatrics
+
+nurse1:
+CN=nurse1:56468-02 UO = Orthropedics
+
+nurse2:
+CN=nurse2:34582-02 UO = Pediatrics
+
+GOV
+CN=GOVERNMENTAGENCY:66546-00 UO = ""
+
+
+
+When program starts databases will be populated and suggested demonstration actions are: 
+===================================================================================================
+
+* Kalle: Gets user account on Server. A record is created with assosiations: doktor1 and nurse1.
+        **We can demonstrate POSITVE ACCESS by letting Kalle read his own medical record**
+
+* Ella: Gets user account on Server. A record is created with assosiations: doktor2 and nurse2. 
+        **We can demonstrate NEGATIVE ACCESS by letting doctor 1 try to read Ellas medical record. (Wrong division)**
+
+* Kim: Gets user account on Server. No medical record created, but Kim is treated by doctor1.
+        **We can demonstrate NEGATIVE ACCESS and POSITVE ACCESS by letting FIRST doktor2 try to create medical record for Kim (Not Kim's doctor).
+          THEN, doctor1 can try to create new medical record for Kim with nurse2 associated (Not same division), 
+          LASTLY, doctor1 can create medical record for Kim with nurse1 associated. (Will work ok)!**
+
+
+** We can also show NEGATIVE ACCESS by letting doctor1 trying to delete medical record for Kalle (Not allowed), 
+   THEN, letting GOV delete the record (Will work ok)!**
+
+
+
+

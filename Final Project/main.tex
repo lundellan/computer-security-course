@@ -1,0 +1,185 @@
+%Template modifié du document de Simon Munger.
+\documentclass{article}
+\input{package.tex}
+\begin{document}
+
+\input{title_page.tex}
+\section*{Architectural Overview}
+%PAGE 1-2: Architectural design
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=16cm]{Figures/diagram3.png}
+    \caption{An architectural diagram of the system. The arrows between “CA” and each group of users are dotted to denote that this exchange only happens once before the user starts using the system, unlike the rest of the solid arrows in the diagram; those depict exchanges that occur every time the system is used.}
+    \label{fig:diagram}
+\end{figure}
+
+The high level architecture of the system consists of several components, all of which are 
+depicted in the diagram above; by describing the diagram from top to bottom you should get an extensive understanding of the system and the design choices behind it. First of all, it is worth describing how the cornerstone of this project, confidentiality, works. The system has been designed to follow the requirements from the instructions regarding confidentiality; this means that each user group has a different set of permissions when it comes to accessing the medical records, and furthermore to enforce these permissions, this also means that each user has to successfully complete a two factor authentication before entering the system.
+
+The authentication relies on the usage of personal certificates that all users are assumed to have. These certificates, containing information such as the full name of the owner and their social security number or employment number, are comparable to real life identity papers and are to be issued from a trusted authority, depicted in the diagram as “CA”, standing for “certificate authority”. Each user stores their certificate in a password protected “Keystore” which is used to authenticate them upon sign in. The user will start a program locally on their computer, labeled as “Client” in the diagram. To begin the authentication, they will unlock their password protected keystore, and subsequently provide the unlocked certificate to the “Client” program. The certificate will then be sent over to “Server”, a remote server where most of the system is stored, and verified against an existing account. If the certificate is successfully verified the user will be signed into the system. Alternatively, if the user does not have an account they will have to contact a trusted administrator who can create an account for them and add their certificate to the truststore. 
+
+For the user to connect from the client program to the server, and thereby to begin this authentication, it is required that the users truststore, depicted as “Truststore” near the top of the diagram, has received the certificate issued by the certificate authority to the server. Furthermore the user needs to have received the key used for the encryption from the server and stored it in its keystore. The same principle is also applicable the other way around; the server is required to have received the certificate issued for the client and have saved it to its truststore, depicted as “Truststore” near the bottom of the diagram, to establish a connection. The server is also presumed to have the necessary encryption key stored in its keystore, depicted as “Keystore” near the bottom of the diagram. These certificates and keys are exchanged at the start of the connection.
+
+Using the built in Java keystore and truststore was a conscious design decision to simplify the implementation of the authentication yet still have it meet our requirements. The combination of it being password protected and containing another form of authentication, a certificate, means that the keystore by default is a two-factor form of authentication and thereby meets our requirements. Followingly, this solution saved us the hassle of having to develop a proprietary two factor authentication for our system. Furthermore, the keystores and truststores vastly simplify the connection setup between the client and server by offering a comprehensive solution for storing the necessary certificates and keys.
+
+The most notable part of the architecture when signed in is the usage of different accounts. The system is designed to house four different user groups, depicted in the diagram above as: “Patient”, “Nurse”, “Doctor” and “Government Agency”. Users are only allowed to access the medical records in accordance to their given permissions. This exchange is performed between the “Client”, the program running on the users computer, and the “Server”, a program running remotely. The “Server” program processes all requests that are inputted by the user into “Client” and stores all the medical records. These permissions are hard coded for each type of account. An appropriate account is assigned to each user when they sign up. In summary you could say that this access control scheme is a mixture of both a role based access control scheme, in the sense that the default permissions are decided by the users work title, and an attribute access control scheme, in the sense that factors like division also decides access. 
+
+In order to reinforce these permissions across the board and avoid unforeseen loopholes we paid close attention to the medical records themselves. Every time a new medical record is created by a doctor, an entirely new object is created for it on the server. Other than the information that is added to the medical record, lists of associated nurses and doctors are also stored in these objects. Tying the associated people to the record directly leads to a better code structure which is less vulnerable; the opposite is centralizing all these associated people in a separate list, creating a list that is essentially an easier target for attacks.
+
+Developing this architecture for increased security also meant implementing an “Audit Log” which stores every request that is processed by the “Server”, essentially meaning that any action that is performed by any user is tracked. The reasoning behind implementing tracking of this kind is to facilitate better troubleshooting of the system, which is an important aspect of securing a system such as this. In the case that a user uses the system in a malicious manner or that something else goes awry, with the help of such a log it will less likely go undiscovered. Furthermore, the log can be used to investigate the matter more deeply and to ultimately help reverse the data on the server to its previous state. Considering the emphasis on security for this system, it was deemed beneficial to implement such a log despite its most prominent downside; the decreased privacy for the user. 
+
+Only trusted administrators are expected to have access to the physical hardware used to store both the medical records and the audit log, decreasing the risk of vulnerable data being extracted.
+
+\section*{Ethical Discussion}
+%PAGE 3: Ethical discussion
+
+When designing a system like this in hospitals, it can be obvious that it has some flaws even if the engineer follows the instructions exactly. Since it is a hospital it can be important to access a patient’s medical records as fast as possible. And if the system has too many countermeasures against intruders it could possibly slow down the process. Since it can be quite obvious for an engineer to see this it could definitely be his or her responsibility to inform the customer about it; followingly the engineer is ethically largely responsible for being transparent and informing the customer about potential vulnerabilities.  Although, if the engineer is not specifically hired to check for suggestions he or she should not feel obliged to do so. In the end the customer has given the engineer a mission and as long as the engineer does his or her job it is the customer’s responsibility that it fulfills the necessary demands. Therefore it is ethically largely the contractors, in this case the hospital administration, responsibility to scrutinise the developed system and conclude that it is secure. When the system is in use it is the ethical responsibility of the system-end-users, in this case the hospital staff and government agency, not to abuse their permissions. 
+
+The access control scheme that has been implemented in this project has certain qualities that we would reiterate on if we were to implement a new one with a better balance between confidentiality, integrity and availability; we think the permissions that were implemented for both nurses and patients are already suitable from this perspective. Allowing patients to read their own medical records is a necessity from an availability perspective. Furthermore this does not violate any confidentiality or integrity. A discussion could be had whether or not patients should be given more permissions regarding their medical records; to exemplify we could add the ability to edit the records. This would make the process easier if a patient detects a mistake in their record, since they no longer would have to contact an associated doctor or nurse to correct the record, and therefore improve general availability. However, this would also impose some clear problems regarding the integrity of the data, since the doctors or nurses who treat the patient no longer would be sure who has written the record. The record could no longer act as a trusted source for prescribing medicine and other such important services. Therefore, we find it preferable to keep the permissions the same for patients in a new access control scheme. 
+
+We find the same true for nurses. It is necessary from an availability point of view that they can read and write to the documents of the patients they are associated with, since we cannot assume that enough workers of higher grades and therefore higher security have the time to always handle this task. However, it could be discussed whether or not they should be able to read all medical records in their division. This is of course from an availability stand point preferable, since nurses can be presumed to meet many new patients every day, and it would take considerable resources to associate them with every one of those. Furthermore, it is preferable from an integrity standpoint that they are not associated with all of those temporary patients they treat on a daily basis, since this could impose the risk of them altering information at a later unintended moment. However it could be viewed as ethically intrusive from a confidentiality perspective that they are given permission to read any medical records in their division, meaning that this information is fairly commonly available to a large portion of the personnel. Once again we ought to strike a balance between these three perspectives, and it seems that the benefits of the availability and integrity that this current solution brings outweighs the ethics of the lessened confidentiality. Followingly a similar solution would be implemented in our new access control scheme. However as a compromise for confidentiality we would create two different profiles for nurses; one with the ability to read all medical records from the division and one without that ability. The one with the permission to read all is intended for nurses who often change patients and rely on the availability of records, and the other is intended for nurses who primarily treat a fixed set of patients.
+
+Using the same arguments as for the nurses we believe it is crucial from both an availability and integrity standpoint to let doctors read and edit the records of associated patients and beneficial to allow doctors to read the all records from their division. However, once again a compromise could be made to aid the shortcomings this solution has in confidentiality by implementing two profiles also for doctors; one for those who treat many new patients frequently, and whose work therefore is vastly simplified by permitting them to read all records, and one for those with fixed patients. That doctors have the ability to create records is also a pure necessity and a permission we therefore would keep in our new model. 
+
+The largest change from the current model that we would like to impose in a new one regards the permissions of government agencies. We have tried to figure out why medical records would need to be deleted without success, nonetheless we humbly respect that this feature is needed for some reason we do not understand. The best solution to avoid risking the integrity of all medical records to something as simple as an agitated worker at a governmental agency, or even worse a more organized attempt to hide someone's identity by deleting their record, would be to require a juridical decision that determines such an action suitable. 
+
+\section*{Security Evaluation of the Design}
+Before discussing the general security of our system, we would first like to answer some questions regarding cipher suites beginning with the cipher suite selection. The selection in question is a handshake used to establish a connection between the client and server; it does so by sending messages back and forth in a few different steps, more commonly referred to as phases. Its main purpose is to establish the security capabilities of the connection, which are decided in the first phase when the handshake is initiated with a hello message from the client and server respectively. These security capabilities include deciding what cipher suite to use, the version of its protocols, a session ID and more. After the server has responded with its “server\_hello” message it may provide if necessary a certificate and keys, and furthermore it may request a certificate from the client. Otherwise it ends this phase, which can be denoted as the second phase, with a server\_hello\_done message. The third phase consists of the client answering the previously mentioned request, if it was sent, with its own certificate, keys and certificate verification, otherwise it just provides the keys that are to be used. In the fourth and final phase both the server and client are given the chance to change the cipher suite, then the handshake is finished.\cite{stalbrown}
+
+\subsection*{Cipher Suite}
+
+Cipher suit identifiers are strings built up by a few different pieces\cite{microCipher} . In our case it looks like this:
+
+TLS\_ECDHE\_RSA\_WITH\_AES\_256\_CBC\_SHA. 
+
+The first shows what protocol is being used, in this case it is TLS.  Column 2 tells what key exchange algorithm is going to be used and column 3 is the authentication algorithm. Column 5, 6 and 7 explains the parts of the bulk encryption. The last one is the Message Authentication (MAC) part, which shows what method is going to be used for the integrity check.
+
+It can be concluded that certain cipher suites are more suitable than others. A cipher suite with a small blocksize for the cipher may not be suitable considering its increased risk for collisions; this may for example mean that 3DES with a 64-bit blocksize is a worse 
+implementation than a cipher suite using AES with double the blocksize. 
+
+During the initial handshake the server and client will exchange information about what type of cipher suites they are able to handle. After the exchange the server will decide on the most secure cipher possible. It is possible for both the client and server to have a preference list which of the ciphers it prefers, the server will then take both the security and preference list into account. If we wished to set a certain cipher suite for our system, we would simply send a “change\_cipher\_spec” message during the handshake from the server to the client with the desired cipher suite.
+
+\subsection*{Two-Factor Authentication}
+
+Now over to the general security of our system. Our program has implemented two factor authentication in a way where the user needs to have a certificate which has to be unlocked with a password. Both are fairly simple and cheap to implement and it uses two means of authentication (something you have and something you know). If a two factor authentication is implemented correctly it is always more safe than simply using way to authenticate the user. It makes the authentication process more complex and would require any potential attacker to go through extra steps to break through the system. While using two different means of authentication it also requires the adversary to access them in different ways. If we used a pin-code and a password the adversary might be able to access them in similar ways. The same goes if the authentication process was using two different files instead, then it might be possible to access the files in similar ways. The main reason for not using any type of biometric authentication (something you are, fingerprint for example) is that it would be both very expensive and hard to implement. As an example if the system would use a fingerprint reader instead of a password all of the users would be required to own a fingerprint reader. The biometric authentications will never be 100 \% correct, there will always be a certain error rate which can lead to either that the correct user can’t access their data or that an adversary can\cite[p.111]{stalbrown}.
+
+\subsection*{Denial-of-Service}
+
+If an attacker wants to lock out users out of the service he or she can use denial-of-service attacks. This means that the attackers send large amounts of authentication attempts to the server, even though all of the attempts will fail there will still be a huge load on the server. If the load on the authentication server is too big the login time would be extremely slow or might not work at all. The danger for the system here is that an adversary can basically shut down the system and hold it hostage. Thanks to the two factor authentication this will not be a problem since the adversary will only attack the certificate instead of the server\cite[119]{stalbrown}. Another type of denial-of-service attack here would be to try and lock out a specific user out of the system by trying to log in to their account enough times until the server locks the account. In our case the latter would not be a problem since the user has to authenticate with a password to the certificate before sending it to the server. It would also require the server to use some sort of system to prevent users from trying to login too many times which it does not have. 
+
+\subsection*{Bruteforce}
+
+Thanks to the two factor authentication where a user is identified both with a certificate and a password it would not be enough for an attacker to obtain the password if they want to access an account. However, if he or she would somehow obtain the certificate there are a few ways for the attacker to try and obtain the password. The attacker could use a brute force-, dictionary- or time memory tradeoff attack. All of them are very similar ways of guessing a password. A bruteforce attack will test every possible combination of characters until it finds the correct one\cite[p.55]{stalbrown}. The dictionary attacks works similarly but it will use different registers of words and commonly used passwords. It’s quite easy to prevent successful brute force attacks by making the user create a more complex password. The time memory trade off attack creates tables that is used during the attack, this will put most of the load on the attacker before the actual attack instead of during\cite{hellman}.
+
+\subsection*{Social Engineering}
+
+An intruder could also use social engineering and manipulate certain users to give them their password. Preventing users from accidentally giving their passwords to adversaries outside of the system is hard to do from a software standpoint, the best way to prevent it is simply making sure that the users are as informed that there never is any reason for them to enter the password outside of the login screen. Spoofing is one way to use social engineering to access a user’s login credentials. Depending on what type of login screen is used in the product there are different ways to use this. A common one is to make a replica of a web page and in some way get users to go to that one instead. It could be something as simple as creating a domain name which is similar to the original one. Entering a password on that site could send it with plaintext to an adversary. Once again, thanks to the two factor authentication it would not be enough for a hacker to know the password. In many cases the hacker might not care about getting access to the data in our database but if they are able to get the password from one application they could be able to use it on other sites as well. One way our software prevents this is that the authentication process never uses an actual email or username to login but only the certificate and password. The best solution to this will still be to inform the user to use different passwords and watch out suspicious details.
+
+\subsection*{Packet sniffing}
+
+Another way for an attacker to try and access data is to simply try and listen on the channel between the client and the server to obtain certain information\cite[p.229]{stalbrown}. How safe our system is towards an attack like this depends on what kind of information the adversary is looking for. After a connection is made, the data sent between server and client will be encrypted so the adversary won’t be able to easily read the data. But depending on what an adversary wants to know it could be enough information who and when connections are made, which is harder to prevent.
+
+\subsection*{Man-in-the-Middle Attack}
+
+The man-in-the-middle attack is when an adversary tricks two clients or servers that they’re communicating with each other when in reality both parties are communicating with a third client\cite[p.728]{stalbrown}. If a man-in-the-middle attack is set up successfully the third client would be able to read, modify and delete data before it is sent away. This would obviously compromise both the integrity and confidentiality of the messages sent. However, this attack relies on the fact that the two parties do not share a key with each other from the beginning which in our case they do.
+
+\subsection*{Replay Attack}
+
+An adversary can in some cases capture the data that is sent from the client to the server when the client is being authenticated\cite[p.119]{stalbrown}. With this information it could be possible for the adversary to send that data to the server again to get authenticated and access all of the data. However, the challenge-response protocol in our connection prevents this kind of attacks.
+
+\subsection*{Permission escalation}
+
+In a lot of systems there is the potential risk of a user through the use of unknown exploits being able to gain unintended permissions; this is often referred to as permission escalation. As an example a patient could gain access to the same rights as a government agency, doctor or nurse by using undetected exploits. Depending on how the system is hosted there are different approaches for an adversary to gain more permissions but the principle is the same. This is found to be possible in systems such as Unix and Windows, where users are given, depending on their permissions, the ability to change their permissions themselves. However, in our system the permissions are hard coded for each account; this means that there is no ability to change your permissions yourself. Following, the risk of permission escalation can be concluded as non-existent for our system, and no other security measures have to be taken than to keep the architecture this way. 
+%PAGE 4-6: Security evaluation of the design
+%\printbibliography      %%Si bibliographie a faire%%
+\newpage
+
+\section*{Group 7's peer-review}
+
+\textbf{Architectural overview}
+
+On the second page you write the following sentence below: \newline
+If the certificate is successfully verified the user will be signed into the system; alternatively the user will be prompted to create a new account affiliated with the provided certificate.
+We have a hard time understanding what you mean by that. Do each person have an account that is linked to a certificate? Or can a new patient create a new account in some way, if so, how does it work? Please develop the explanation a bit. 
+
+Nice picture. Maybe have some text above it to introduce the reader first.
+
+Great description of how you structured the access control. However it was never specified what kind of access control it has that has been implemented. (RBAC, ABAC, etc).
+
+\textbf{Ethical Discussion}
+
+Remember to mention what the different roles can do (you have done this with the engineer).
+
+A relevant problem if the patients would edit their own records is that they could write whatever they want, like that they need some medicine that they do not actually need. (If you want to shorten down your text you could delete this part).
+
+\textbf{Security evaluation of the design}
+
+This part is very well written but it would be easier to follow if you added some heading to divide the text into smaller sections. 
+
+You do bring up some examples regarding different attacks that your program could be facing but you could have a bit more on this, describing the different attacks and how you would prevent them in more detail.
+
+"The time memory trade off attack creates tables that are used during the attack, this will put most of the load on et attacker before the actual attack. [1][3]" More relevant would be to explain how you prevent these attacks.
+
+"Something you and something you know" - It feels like a word went missing there.  
+
+"A way to prevent this type of attack is that Another type of denial-of-service attack here would be to try and lock out a specific user out of the system by trying to log in to their account enough times until the server locks the account." - It feels like something went wrong with this sentence.
+
+You say two-factor authentication protects against DoS, but could a client not send requests to the server with an invalid certificate, which would fail the handshake, but still requires some amount of processing from the server.
+
+Remember that you don't only have to refer in the end of each part. Also, include the references before the end of the sentence. Maybe include sides or more information as well.
+
+\newpage
+
+\section*{Group 8’s peer-review}
+
+\textbf{Architectural overview}
+
+The architectural overview covers all the points provided by the instructions, including a simple figure (maybe a little too big when the figure-text is included) which explains all the essential parts of the authentication and logging system. The read gets a good overview and discussion concerning the design choices made when building the system in the report. This is achieved by setting up a clear goal for the system - a journal system that provides confidentiality for the patients it concerns. The complicated section on certificates is easily understood through a few well structured paragraphs. Perhaps the drawbacks with the chosen type of two-factor implementation could be explored. Int he paragraphs concerning access control I might be valuable to discuss your solution in comparison with some of the common access control schemes such as RCAB, ACAB,and others. Concerning the logs it might be relevant to include where they are stored and who has access to the. Overall the section covers all choices of implementation in a well motivated manner.
+
+\textbf{Ethical discussion}
+
+The ethical discussion is exceedingly terse and thorough with respect to availability, with involved discussion about the benefits and drawbacks of the formulated, improved access control scheme. Since the control scheme description is highly detailed, almost nothing is left unclear. However, the discussion on availability over integrity is curious in some cases, making integrity barely seem like an afterthought. In reality, letting patients edit their own journals would pose an immense juridical liability, and would wreak havoc on the medical and insurance industries. Hardly something worth risking for extended availability. Interesting section about dividing the doctor and nurse classes in order to permit access across the system for doctors and nurses who are frequently assigned new patients. This inevitably helps availability, while not severely risking confidentiality or integrity. Good idea! There are also a few things to be desired in terms of budgeting discussion. With an altered, and in a sense, a more intricate system, what constraints would be imposed by a restricted hospital budget? What would that entail for patient health? The alternative doctor and nurse classes could also be discussed here. Would such improvements affect the budget evaluation?
+
+\textbf{Security evaluation}
+
+The explanation of the cipher suite is explained very clearly and is easily understood. Remember to think about the target audience, in this case the audience is people who are knowledgeable about the subject, so to include description of for example what brute-force and time-memory-trade off attack is might not be necessary. You have done a good job listing different types of attacks and what you have implemented in your system in order to prevent them. As a whole, very well written section, one way you could add more clarity to it is if you added subsections. This would help the reader get an overview of the security evaluation of your system faster.
+
+\newpage
+
+\section*{Improvement Sheet}
+
+\subsection*{Improvements of the Architectural Overview}
+\begin{description}[font=$\bullet$\scshape\bfseries]
+    \item Decreased size of image in architectural overview,
+    \item Added description of the common access control scheme that was used in the system,
+    \item Cleared up some confusion regarding how new accounts are created, and
+    \item Described in more detail who has access to the physical storage of the medical records.
+\end{description}
+
+\subsection*{Improvements of the Ethical Discussion}
+\begin{description}[font=$\bullet$\scshape\bfseries]
+    \item Broadened the discussion of responsibility to cover other parties than just engineers, and
+    \item Broadened the discussion of the balance between integrity and availability regarding the patients permissions.
+\end{description}
+
+\subsection*{Improvements of the Security Evaluation}
+\begin{description}[font=$\bullet$\scshape\bfseries]
+    \item Improved the structure of the report by adding subsections to each described attack,
+    \item Described in more detail the cipher suite that was used for our system, and
+    \item Incomplete or diffuse sentences were fixed.
+    \item Fixed the format of the sources.
+\end{description}
+
+\newpage
+
+\includegraphics[width=16cm]{Figures/peerReview.png}
+
+\newpage
+
+\includegraphics[width=16cm]{Figures/contributionStatement.png}
+
+\bibliography
+\bibliographystyl
+\printbibliography
+\end{document}[7]
